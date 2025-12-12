@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -45,94 +45,55 @@ import {
   UNFURNISHED_ITEMS,
 } from '../../typings/PropertyTypes';
 
-// Mock data - future me API se aayega
-const getListingData = (id: string): IPropertyData => {
-  return {
-    id: id,
-    propertyCategory: PropertyCategory.FLAT_APARTMENT,
-    postingType: PostingType.RENT,
-    propertyTitle: 'Spacious 3 BHK Flat in Prime Location',
-    description:
-      'Beautiful 3 BHK flat available for rent in a well-maintained society. The property features modern amenities, spacious rooms, and excellent connectivity. Perfect for families looking for a comfortable living space.',
-    bhkType: '3 BHK' as any,
-    price: 25000,
-    maintenanceCharges: 3000,
-    builtUpArea: 1800,
-    carpetArea: 1500,
-    propertyAge: 5,
-    propertyStatus: PropertyStatus.READY_TO_MOVE,
-    totalFloors: 10,
-    yourFloor: 5,
-    facingDirection: 'East' as any,
-    location: {
-      city: 'Chandigarh',
-      locality: 'Sector 15',
-      societyName: 'Green Valley Apartments',
-      landmark: 'Near Sector 15 Market',
-      pincode: '160015',
-      googleMapLink: 'https://maps.google.com/...',
-      coordinates: {
-        lat: 30.7333,
-        long: 76.7794,
-      },
-    },
-    furnishingType: FurnishingType.FULLY_FURNISHED,
-    furnishingItems: FULLY_FURNISHED_ITEMS,
-    societyAmenities: [
-      'Lift' as any,
-      'Security Guard' as any,
-      'CCTV' as any,
-      'Power Backup' as any,
-      'Gym' as any,
-      'Swimming Pool' as any,
-      'Park' as any,
-      'Kids Play Area' as any,
-      'Visitor Parking' as any,
-    ],
-    carParking: {
-      type: 'Covered' as any,
-      count: 2,
-    },
-    bikeParking: true,
-    additionalRooms: ['Study Room' as any, 'Pooja Room' as any],
-    legalInfo: {
-      reraApproved: true,
-      reraNumber: 'PBRERA-SAS81-PR0748',
-      registryAvailable: true,
-      loanAvailable: true,
-      taxPaid: true,
-    },
-    images: [
-      '/assets/search/1379331e-593a-4c1e-af51-222808c85a11.webp',
-      '/assets/search/013c9377-349f-418b-8d4c-15f923234a5f.webp',
-      '/assets/search/2dd686bc-0195-40db-a37f-8b02476415b7.webp',
-      '/assets/search/44cb0de7-fa62-49e2-b4b8-68aed14373cb.webp',
-      '/assets/search/97bc37a6-9a1b-4bb2-8564-771319b246fb.webp',
-    ],
-    videos: [],
-    floorPlan: undefined,
-    contact: {
-      name: 'Rajesh Kumar',
-      mobile: '+91 9876543210',
-      whatsapp: '+91 9876543210',
-      email: 'rajesh.kumar@example.com',
-      isOwner: true,
-    },
-  };
-};
-
 const ListingDetail = () => {
   const router = useRouter();
   const { id } = router.query;
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [property, setProperty] = useState<IPropertyData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!id) return null;
+  // Fetch property data from API
+  useEffect(() => {
+    const fetchProperty = async () => {
+      if (!id || typeof id !== 'string') {
+        setLoading(false);
+        return;
+      }
 
-  const property = getListingData(id as string);
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`/api/properties/${id}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch property: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setProperty(data);
+      } catch (err: any) {
+        console.error('Error fetching property:', err);
+        setError(err.message || 'Failed to load property details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
 
   const getFurnishingItems = () => {
+    if (!property) return [];
+    
+    // If property already has furnishingItems, use them
+    if (property.furnishingItems && property.furnishingItems.length > 0) {
+      return property.furnishingItems;
+    }
+    
+    // Otherwise, use default items based on furnishing type
     switch (property.furnishingType) {
       case FurnishingType.FULLY_FURNISHED:
         return FULLY_FURNISHED_ITEMS;
@@ -145,7 +106,45 @@ const ListingDetail = () => {
     }
   };
 
-  const furnishingItems = getFurnishingItems();
+  const furnishingItems = property ? getFurnishingItems() : [];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <AppHead />
+        <AppHeader />
+        <div className="mt-[86px] flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+            <p className="text-gray-600">Loading property details...</p>
+          </div>
+        </div>
+        <AppFooter />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !property) {
+    return (
+      <div className="min-h-screen bg-white">
+        <AppHead />
+        <AppHeader />
+        <div className="mt-[86px] flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-red-600 text-lg mb-4">{error || 'Property not found'}</p>
+            <Link href="/search" className="text-primary hover:underline">
+              Go back to search
+            </Link>
+          </div>
+        </div>
+        <AppFooter />
+      </div>
+    );
+  }
+
+  if (!id) return null;
 
   // Icon mapping for furnishing items
   const getFurnishingIcon = (item: string) => {

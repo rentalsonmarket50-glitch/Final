@@ -16,6 +16,7 @@
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.0",
     "@heroicons/react": "^2.2.0",
+    "@supabase/supabase-js": "^2.87.1",
     "@types/node": "^22.7.4",
     "@types/react": "^18.3.5",
     "@types/react-date-range": "^1.1.6",
