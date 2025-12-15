@@ -114,7 +114,7 @@ export const PropertyQueryForm = ({
       } else {
         console.error('KV Store API submission failed:', result);
         toast.error('Failed to submit inquiry', {
-          description: result.error || 'Please try again later.',
+          description: 'Please try again later.',
         });
       }
     } catch (error: any) {
