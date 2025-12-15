@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { IContactForm } from '../typings';
 import { toast } from 'sonner';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { propertyQueriesKvApi } from '../utils/kvClient';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface ContactFormProps {
@@ -87,30 +87,31 @@ export const ContactForm = ({
         console.error('CRM submission error:', crmError);
       }
 
-      // Submit to Supabase backend
-      console.log('Submitting to Supabase backend...');
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-5f9a91cf/queries`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: '', 
-            phone: formData.phone,
-            message: `Requirement Type: ${formData.requirementType}\nProperty Type: ${formData.propertyType}\nPurpose: ${formData.purpose}\nPreferred Location: ${formData.location}\nBudget: ${formData.budget}${propertyDescription ? `\n\nProperty Details: ${propertyDescription}` : ''}`,
-            propertyId: propertyId,
-            type: propertyId ? 'property' : 'general',
-          }),
-        }
-      );
+      // Submit to KV Store API (Property Queries)
+      console.log('Submitting Property Query to KV Store API...');
+      const queryData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: '', 
+        phone: formData.phone,
+        subject: `Requirement: ${formData.requirementType} - ${formData.propertyType}`,
+        message: `Requirement Type: ${formData.requirementType}\nProperty Type: ${formData.propertyType}\nPurpose: ${formData.purpose}\nPreferred Location: ${formData.location}\nBudget: ${formData.budget}${propertyDescription ? `\n\nProperty Details: ${propertyDescription}` : ''}`,
+        queryType: formData.requirementType || 'General',
+        requirementType: formData.requirementType,
+        propertyType: formData.propertyType,
+        purpose: formData.purpose,
+        location: formData.location,
+        budget: formData.budget,
+        propertyId: propertyId,
+        propertyTitle: propertyTitle,
+        propertyDescription: propertyDescription,
+        type: 'general',
+        status: 'Pending',
+      };
 
-      console.log('Supabase response status:', response.status);
-      const result = await response.json();
-      console.log('Supabase response data:', result);
+      const result = await propertyQueriesKvApi.create(queryData);
+      console.log('Property Queries KV API response:', result);
 
       if (result.success) {
         toast.success('Thank you! We will contact you soon.', {
@@ -134,7 +135,7 @@ export const ContactForm = ({
         onSubmitSuccess?.();
         onClose();
       } else {
-        console.error('Supabase submission failed:', result);
+        console.error('KV API submission failed:', result);
         toast.error('Failed to submit inquiry', {
           description: result.error || 'Please try again later.',
         });

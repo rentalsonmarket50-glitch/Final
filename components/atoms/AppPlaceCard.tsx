@@ -8,9 +8,41 @@ const AppPlaceCard = ({ data }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Validate and get image URL
+  const getValidImageUrl = (img: any): string => {
+    // Handle null, undefined, empty string
+    if (!img) return '/assets/hero.jpg';
+    
+    // Convert to string and trim
+    const imgStr = String(img).trim();
+    
+    // Check for invalid values
+    if (!imgStr || 
+        imgStr === '[]' || 
+        imgStr === 'null' || 
+        imgStr === 'undefined' ||
+        imgStr === '[object Object]' ||
+        imgStr.toLowerCase() === 'null' ||
+        imgStr.toLowerCase() === 'undefined') {
+      return '/assets/hero.jpg';
+    }
+    
+    // Must start with /, http://, or https://
+    if (imgStr.startsWith('/') || imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
+      return imgStr;
+    }
+    
+    // If it doesn't start with valid prefix, return default
+    return '/assets/hero.jpg';
+  };
+
+  // Ensure we always have a valid image URL
+  const imageUrl = getValidImageUrl(data?.img || data?.images?.[0]);
+
   // Calculate total price for stay (2 nights for location sections)
   const nights = 2;
-  const priceMatch = data.price.match(/₹?([\d,]+)/);
+  const priceString = data?.price ? String(data.price) : '₹0';
+  const priceMatch = priceString.match(/₹?([\d,]+)/);
   const pricePerNight = priceMatch ? parseInt(priceMatch[1].replace(/,/g, '')) : 0;
   const totalPrice = pricePerNight * nights;
   const formattedPrice = new Intl.NumberFormat('en-IN', {
@@ -20,10 +52,10 @@ const AppPlaceCard = ({ data }) => {
   }).format(totalPrice);
 
   // Format dates (if available)
-  const checkInDate = data.checkIn || '20 Dec';
-  const checkOutDate = data.checkOut || '25 Dec';
+  const checkInDate = data?.checkIn || '20 Dec';
+  const checkOutDate = data?.checkOut || '25 Dec';
 
-  const listingId = data.id || '1';
+  const listingId = data?.id || '1';
   const listingUrl = `/listing/${listingId}`;
 
   return (
@@ -32,13 +64,14 @@ const AppPlaceCard = ({ data }) => {
         {/* Image Container */}
         <div className="relative w-full h-64 md:h-72 rounded-xl overflow-hidden mb-3">
           <Image
-            src={data.img}
-            alt={data.title}
+            src={imageUrl}
+            alt={data?.title || 'Property'}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
             className="rounded-xl transition-transform duration-300 group-hover:scale-105"
             placeholder="blur"
-            blurDataURL={data.img}
+            blurDataURL={imageUrl}
             quality={80}
           />
 
@@ -63,7 +96,7 @@ const AppPlaceCard = ({ data }) => {
           )}
 
           {/* Image Pagination Dots */}
-          {data.images && data.images.length > 1 && (
+          {data?.images && Array.isArray(data.images) && data.images.length > 1 && (
             <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1 z-10">
               {data.images.map((_, index) => (
                 <button
@@ -85,16 +118,16 @@ const AppPlaceCard = ({ data }) => {
         <div className="space-y-1">
           {/* Title */}
           <h3 className="text-base font-semibold text-gray-900 truncate">
-            {data.title}
+            {data?.title || 'Property'}
           </h3>
 
           {/* Description */}
-          {data.description && (
+          {data?.description && (
             <p className="text-sm text-gray-500 line-clamp-2">{data.description}</p>
           )}
 
           {/* Location */}
-          <p className="text-sm text-gray-500 truncate">{data.location}</p>
+          <p className="text-sm text-gray-500 truncate">{data?.location || 'Location not specified'}</p>
 
           {/* Price */}
           <div className="flex items-center justify-end pt-2">

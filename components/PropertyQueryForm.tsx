@@ -2,13 +2,19 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { generalQueriesKvApi } from '../utils/kvClient';
 
 interface PropertyQueryFormProps {
   propertyId?: string;
   propertyTitle?: string;
   propertyDescription?: string;
   propertyUrl?: string;
+  // Property details for auto-population
+  requirement?: string; // Rent or Sell
+  propertyType?: string; // Property Category + BHK Type
+  purpose?: string; // Residential/Commercial
+  location?: string; // City, Locality
+  budget?: string; // Price
   inline?: boolean;
   onSubmitSuccess?: () => void;
 }
@@ -18,6 +24,11 @@ export const PropertyQueryForm = ({
   propertyTitle, 
   propertyDescription,
   propertyUrl,
+  requirement,
+  propertyType,
+  purpose,
+  location,
+  budget,
   inline = false,
   onSubmitSuccess 
 }: PropertyQueryFormProps) => {
@@ -42,57 +53,50 @@ export const PropertyQueryForm = ({
     setIsSubmitting(true);
 
     try {
-      // Submit to CRM (Vtiger WebForm)
-      try {
-        const crmFormData = new FormData();
-        crmFormData.append('__vtrftk', 'sid:1bb652ce2c5cd4c2106304a2911d36d18c4cd1fe,1765267866');
-        crmFormData.append('publicid', '7b2f54ee9785f7921f068fe2bb6b6f43');
-        crmFormData.append('urlencodeenable', '1');
-        crmFormData.append('name', 'ROM Form');
-        crmFormData.append('firstname', formData.firstName);
-        crmFormData.append('lastname', formData.lastName);
-        crmFormData.append('mobile', formData.phone);
+      // Format phone number with +91
+      const formattedPhone = formData.phone.startsWith('+91') 
+        ? formData.phone 
+        : `+91 ${formData.phone}`;
 
-        fetch('https://crm.base2brand.com/modules/Webforms/capture.php', {
-          method: 'POST',
-          body: crmFormData,
-          mode: 'no-cors',
-        }).catch((err) => console.log('CRM submission error (expected with no-cors):', err));
+      // Prepare data for KV Store with property details
+      // All property details are auto-populated from PDP page
+      const queryData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formattedPhone,
+        // Property details from PDP page
+        propertyId: propertyId || '',
+        propertyTitle: propertyTitle || '',
+        propertyDescription: propertyDescription || '',
+        propertyUrl: propertyUrl || '',
+        // Auto-populated from property data (from PDP)
+        requirement: requirement || '',
+        propertyType: propertyType || '',
+        purpose: purpose || '',
+        location: location || '',
+        budget: budget || '',
+        type: 'general',
+        status: 'Pending',
+      };
 
-        console.log('CRM submission initiated with data:', {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-        });
-      } catch (crmError) {
-        console.error('CRM submission error:', crmError);
-      }
+      console.log('=== SUBMITTING PROPERTY QUERY ===');
+      console.log('Form Data:', formData);
+      console.log('Property Details:', {
+        propertyId,
+        propertyTitle,
+        requirement,
+        propertyType,
+        purpose,
+        location,
+        budget,
+        propertyUrl,
+      });
+      console.log('Complete General Query Data (from PDP):', queryData);
 
-      // Submit to Supabase backend
-      console.log('Submitting to Supabase backend...');
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-5f9a91cf/queries`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: '', 
-            phone: formData.phone,
-            message: `Property Query${propertyDescription ? `\n\nProperty Details: ${propertyDescription}` : ''}${propertyUrl ? `\n\nProperty URL: ${propertyUrl}` : ''}`,
-            propertyId: propertyId,
-            propertyUrl: propertyUrl,
-            type: propertyId ? 'property' : 'general',
-          }),
-        }
-      );
-
-      console.log('Supabase response status:', response.status);
-      const result = await response.json();
-      console.log('Supabase response data:', result);
+      // Submit to KV Store API as a General Query
+      const result = await generalQueriesKvApi.create(queryData);
+      
+      console.log('General Queries KV API response (from PDP):', result);
 
       if (result.success) {
         toast.success('Thank you! We will contact you soon.', {
@@ -108,15 +112,15 @@ export const PropertyQueryForm = ({
         
         onSubmitSuccess?.();
       } else {
-        console.error('Supabase submission failed:', result);
+        console.error('KV Store API submission failed:', result);
         toast.error('Failed to submit inquiry', {
           description: result.error || 'Please try again later.',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting query:', error);
       toast.error('Failed to submit inquiry', {
-        description: 'Please check console for details and try again.',
+        description: error.message || 'Please check console for details and try again.',
       });
     } finally {
       setIsSubmitting(false);

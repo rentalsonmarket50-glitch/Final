@@ -126,42 +126,43 @@ const AppPreLaunch: FC<IAppPreLaunchProps> = ({ properties }) => {
                   onClick={() => setSelectedProperty(property)}
                   className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
                 >
-                  {/* Image */}
-                  <div className="relative w-full h-48 md:h-56 overflow-hidden">
-                    <Image
-                      src={property.img}
-                      alt={property.title}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className="group-hover:scale-105 transition-transform duration-300"
-                      placeholder="blur"
-                      blurDataURL={property.img}
-                    />
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
+                    {/* Image */}
+                    <div className="relative w-full h-48 md:h-56 overflow-hidden">
+                      <Image
+                        src={property.img}
+                        alt={property.title}
+                        fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                        style={{ objectFit: 'cover' }}
+                        className="group-hover:scale-105 transition-transform duration-300"
+                        placeholder="blur"
+                        blurDataURL={property.img}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
                         e.stopPropagation();
-                      }}
-                      className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:scale-110 transition-transform z-10"
-                    >
-                      <HeartIcon className="h-5 w-5 text-gray-700" />
-                    </button>
-                  </div>
+                        }}
+                        className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:scale-110 transition-transform z-10"
+                      >
+                        <HeartIcon className="h-5 w-5 text-gray-700" />
+                      </button>
+                    </div>
 
-                  {/* Content */}
-                  <div className="p-4">
-                    <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
-                      {property.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                      {property.description}
-                    </p>
-                    <p className="text-sm text-gray-500 mb-3">{property.location}</p>
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
+                        {property.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        {property.description}
+                      </p>
+                      <p className="text-sm text-gray-500 mb-3">{property.location}</p>
                     <div className="flex items-center justify-end">
-                      <div className="text-right">
-                        <span className="text-base font-semibold text-gray-900">
-                          {property.price}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-base font-semibold text-gray-900">
+                            {property.price}
+                          </span>
                       </div>
                     </div>
                   </div>

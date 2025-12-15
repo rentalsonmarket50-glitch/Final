@@ -108,6 +108,30 @@ const ListingDetail = () => {
 
   const furnishingItems = property ? getFurnishingItems() : [];
 
+  // Helper function to validate and sanitize image URLs
+  const isValidImageUrl = (url: any): boolean => {
+    if (!url) return false;
+    const urlStr = String(url).trim();
+    if (!urlStr || urlStr === '[]' || urlStr === 'null' || urlStr === 'undefined' || urlStr === '[object Object]') {
+      return false;
+    }
+    return urlStr.startsWith('/') || urlStr.startsWith('http://') || urlStr.startsWith('https://');
+  };
+
+  // Get valid images from property
+  const getValidImages = (): string[] => {
+    if (!property || !property.images) return ['/assets/hero.jpg'];
+    
+    const validImages = property.images
+      .filter((img: any) => isValidImageUrl(img))
+      .map((img: any) => String(img).trim());
+    
+    return validImages.length > 0 ? validImages : ['/assets/hero.jpg'];
+  };
+
+  const validImages = property ? getValidImages() : ['/assets/hero.jpg'];
+  const currentImage = validImages[Math.min(selectedImage, validImages.length - 1)] || '/assets/hero.jpg';
+
   // Loading state
   if (loading) {
     return (
@@ -203,7 +227,7 @@ const ListingDetail = () => {
           {/* Main Image */}
           <div className="col-span-4 md:col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden">
             <Image
-              src={property.images[selectedImage]}
+              src={currentImage}
               alt={property.propertyTitle}
               fill
               style={{ objectFit: 'cover' }}
@@ -226,32 +250,37 @@ const ListingDetail = () => {
           </div>
 
           {/* Thumbnail Images */}
-          {property.images.slice(1, 5).map((img, index) => (
+          {validImages.slice(1, 5).map((img, index) => {
+            if (!isValidImageUrl(img)) return null;
+            return (
             <div
               key={index}
               className="relative rounded-r-2xl overflow-hidden cursor-pointer group"
-              onClick={() => {
-                setSelectedImage(index + 1);
-                setShowGallery(true);
-              }}
+                onClick={() => {
+                  setSelectedImage(index + 1);
+                  setShowGallery(true);
+                }}
             >
               <Image
                 src={img}
-                alt={`${property.propertyTitle} ${index + 2}`}
+                  alt={`${property.propertyTitle} ${index + 2}`}
                 fill
                 style={{ objectFit: 'cover' }}
                 className="group-hover:opacity-80 transition-opacity"
               />
             </div>
-          ))}
+            );
+          })}
 
           {/* Show all photos button */}
-          <button
-            onClick={() => setShowGallery(true)}
-            className="absolute bottom-6 right-6 px-4 py-2 bg-white rounded-lg shadow-lg font-medium text-sm hover:bg-gray-50 z-10 transition-all hover:scale-105"
-          >
-            Show all {property.images.length} photos
+          {validImages.length > 1 && (
+            <button
+              onClick={() => setShowGallery(true)}
+              className="absolute bottom-6 right-6 px-4 py-2 bg-white rounded-lg shadow-lg font-medium text-sm hover:bg-gray-50 z-10 transition-all hover:scale-105"
+            >
+              Show all {validImages.length} photos
           </button>
+          )}
         </div>
       </div>
 
@@ -311,7 +340,7 @@ const ListingDetail = () => {
               <h2 className="text-xl font-semibold mb-4">Basic Details</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {property.bhkType && (
-                  <div>
+                <div>
                     <div className="text-sm text-gray-500">BHK Type</div>
                     <div className="font-semibold text-gray-900">{property.bhkType}</div>
                   </div>
@@ -338,7 +367,7 @@ const ListingDetail = () => {
                   <div>
                     <div className="text-sm text-gray-500">Total Floors</div>
                     <div className="font-semibold text-gray-900">{property.totalFloors}</div>
-                  </div>
+              </div>
                 )}
                 {property.yourFloor && (
                   <div>
@@ -352,7 +381,7 @@ const ListingDetail = () => {
                     <div className="font-semibold text-gray-900">{property.facingDirection}</div>
                   </div>
                 )}
-              </div>
+                </div>
             </div>
 
             {/* Description */}
@@ -420,14 +449,14 @@ const ListingDetail = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {furnishingItems.map((item, index) => {
                       const Icon = getFurnishingIcon(item);
-                      return (
+                  return (
                         <div key={index} className="flex items-center gap-2">
                           <Icon className="h-5 w-5 text-primary" />
                           <span className="text-sm text-gray-700">{item}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                    </div>
+                  );
+                })}
+              </div>
                 </div>
               )}
             </div>
@@ -457,7 +486,7 @@ const ListingDetail = () => {
                     <div className="text-sm text-gray-500">Car Parking</div>
                     <div className="font-semibold text-gray-900">
                       {property.carParking.count} Car(s) - {property.carParking.type}
-                    </div>
+                </div>
                   </div>
                 )}
                 {property.bikeParking && (
@@ -467,7 +496,7 @@ const ListingDetail = () => {
                   </div>
                 )}
               </div>
-            </div>
+                      </div>
 
             {/* Additional Rooms */}
             {property.additionalRooms && property.additionalRooms.length > 0 && (
@@ -479,10 +508,10 @@ const ListingDetail = () => {
                       <HomeIcon className="h-5 w-5 text-primary" />
                       <span className="text-sm text-gray-700">{room}</span>
                     </div>
-                  ))}
-                </div>
+                      ))}
+                    </div>
               </div>
-            )}
+              )}
 
             {/* Legal Information */}
             <div className="border-b pb-6">
@@ -508,7 +537,7 @@ const ListingDetail = () => {
                     <XCircleIcon className="h-5 w-5 text-red-500" />
                   )}
                   <div className="font-medium text-gray-900">Registry Available</div>
-                </div>
+                  </div>
                 <div className="flex items-center gap-2">
                   {property.legalInfo.loanAvailable ? (
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
@@ -516,7 +545,7 @@ const ListingDetail = () => {
                     <XCircleIcon className="h-5 w-5 text-red-500" />
                   )}
                   <div className="font-medium text-gray-900">Loan Available</div>
-                </div>
+                  </div>
                 <div className="flex items-center gap-2">
                   {property.legalInfo.taxPaid ? (
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
@@ -556,10 +585,17 @@ const ListingDetail = () => {
                 propertyTitle={property.propertyTitle}
                 propertyDescription={`${property.location.locality}, ${property.location.city}\n\n${property.description}\n\nPrice: ₹${property.price.toLocaleString('en-IN')}${property.postingType === PostingType.RENT ? '/month' : ''}`}
                 propertyUrl={
-                  router.asPath
-                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}${router.asPath}`
+                  typeof window !== 'undefined' && router.asPath
+                    ? `${window.location.origin}${router.asPath}`
+                    : router.asPath
+                    ? `${router.asPath}`
                     : ''
                 }
+                requirement={property.postingType === PostingType.RENT ? 'Rent' : 'Purchase'}
+                propertyType={`${property.propertyCategory}${property.bhkType ? ` - ${property.bhkType}` : ''}`}
+                purpose={property.propertyCategory === PropertyCategory.COMMERCIAL ? 'Commercial' : 'Residential'}
+                location={`${property.location.locality}, ${property.location.city}${property.location.pincode ? ` - ${property.location.pincode}` : ''}`}
+                budget={`₹${property.price.toLocaleString('en-IN')}${property.postingType === PostingType.RENT ? '/month' : ''}`}
                 inline={true}
                 onSubmitSuccess={() => {}}
               />
@@ -571,8 +607,8 @@ const ListingDetail = () => {
       {/* Image Gallery Modal */}
       {showGallery && (
         <ImageGalleryModal
-          images={property.images}
-          initialIndex={selectedImage}
+          images={validImages}
+          initialIndex={Math.min(selectedImage, validImages.length - 1)}
           title={property.propertyTitle}
           onClose={() => setShowGallery(false)}
         />

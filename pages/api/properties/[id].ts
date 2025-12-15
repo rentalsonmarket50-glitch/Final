@@ -111,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('properties')
       .select('*')
       .eq('id', parseInt(id))
-      .eq('status', 'Approved') // Only fetch approved properties
+      .in('status', ['Approved', 'Published', 'Active']) // Multiple status values
       .single();
 
     if (error) {

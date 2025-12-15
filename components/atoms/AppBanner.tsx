@@ -6,12 +6,13 @@ const AppBanner = () => {
     <section className="my-12 mb-20">
       <div className="container">
         <Link href="/" className="relative block">
-          <div className="h-[400px] lg:h-[400px] object-cover rounded-3xl">
+          <div className="relative h-[400px] lg:h-[400px] object-cover rounded-3xl">
             <div className="absolute inset-0 z-10 md:hidden" />
             <Image
               src="/insurance-mortgage-real-estate-concept-surprised-young-man-pointing-house-card-model-person.webp"
               alt="banner"
               fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
               style={{ objectFit: 'cover' }}
               className="rounded-xl"
               placeholder="blur"
@@ -25,7 +26,7 @@ const AppBanner = () => {
               The Greatest Outdoors
             </h2>
             <p className="mb-4 text-xs text-gray-500 sm:mb-5 sm:text-base">
-              Whitelists curated by Airbnb
+              Hand‑picked listings curated by ROM
             </p>
             <button className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg sm:text-base sm:py-3">
               Get Inspired

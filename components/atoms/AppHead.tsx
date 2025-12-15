@@ -6,13 +6,10 @@ interface IAppHeadProps {
   description?: string;
 }
 
-const defaultProps: IAppHeadProps = {
-  title: 'Airbnb: Vacation Rentals, Cabins, Beach Houses, Unique Homes & Experiences',
-  description:
-    'Find vacation rentals, cabins, beach houses, unique homes and experiences around the world - all made possible by hosts on Airbnb.',
-};
-
-const AppHead: FC<IAppHeadProps> = ({ title, description }) => {
+const AppHead: FC<IAppHeadProps> = ({ 
+  title = 'ROM – Real Estate, Properties & Homes',
+  description = 'Find verified properties, homes and real estate deals with ROM – your trusted real estate partner.'
+}) => {
   return (
     <Head>
       <title>{title}</title>
@@ -23,7 +20,5 @@ const AppHead: FC<IAppHeadProps> = ({ title, description }) => {
     </Head>
   );
 };
-
-AppHead.defaultProps = defaultProps;
 
 export default AppHead;

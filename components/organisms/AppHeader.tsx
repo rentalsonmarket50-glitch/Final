@@ -59,7 +59,7 @@ const AppHeader: FC<AppHeaderProps> = ({ exploreNearby, searchPage, query }) => 
     } else {
       // Transparent background when at top (home page only)
       if (searchPage === false) {
-        style.push('bg-transparent');
+      style.push('bg-transparent');
       } else {
         style.push('bg-white shadow-lg');
       }
@@ -183,10 +183,10 @@ const AppHeader: FC<AppHeaderProps> = ({ exploreNearby, searchPage, query }) => 
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                 className="flex items-center pl-3 pr-1 bg-white border border-gray-200 rounded-full h-11 hover:shadow-md transition-shadow"
               >
-                <Bars3Icon className="h-5 mr-2 text-gray-300" />
-                <UserCircleIcon className="h-10 text-gray-300" />
+              <Bars3Icon className="h-5 mr-2 text-gray-300" />
+              <UserCircleIcon className="h-10 text-gray-300" />
                 <ChevronDownIcon className="h-4 w-4 text-gray-500 ml-1" />
-              </button>
+            </button>
               
               {/* Profile Dropdown */}
               {isProfileDropdownOpen && (
@@ -197,9 +197,9 @@ const AppHeader: FC<AppHeaderProps> = ({ exploreNearby, searchPage, query }) => 
                   />
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     <Link
-                      href="/"
+                      href="/become-a-broker"
                       onClick={() => setIsProfileDropdownOpen(false)}
-                      className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors font-semibold"
                     >
                       Become a broker
                     </Link>

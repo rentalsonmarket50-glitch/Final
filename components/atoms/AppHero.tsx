@@ -5,12 +5,13 @@ const AppHero = () => {
     <section className="relative h-[65vh] md:h-[85vh]">
       <div className="absolute z-10 w-full bg-gradient-to-b from-transparent-black to-transparent h-28" />
       <Image
-        src="/assets/hero.jpg"
+        src="/assets/real-estate-concept-satisfied-man-recommending-agency-pointing-copy-space-banner-with-thumb-showi (2).jpg"
         fill
+        sizes="100vw"
         alt="hero"
         style={{ objectFit: 'cover', objectPosition: 'center bottom' }}
         placeholder="blur"
-        blurDataURL="/assets/hero.jpg"
+        blurDataURL="/assets/real-estate-concept-satisfied-man-recommending-agency-pointing-copy-space-banner-with-thumb-showi (2).jpg"
         quality={50}
       />
 

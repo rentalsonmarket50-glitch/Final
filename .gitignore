@@ -33,3 +33,7 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# very long static asset paths (avoid Windows path length issues)
+public/assets/Static data property/
+public/Static data property/

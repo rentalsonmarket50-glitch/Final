@@ -19,7 +19,24 @@ export const ImageGalleryModal = ({
   title,
   onClose,
 }: ImageGalleryModalProps) => {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  // Validate and filter images
+  const isValidImageUrl = (url: any): boolean => {
+    if (!url) return false;
+    const urlStr = String(url).trim();
+    if (!urlStr || urlStr === '[]' || urlStr === 'null' || urlStr === 'undefined' || urlStr === '[object Object]') {
+      return false;
+    }
+    return urlStr.startsWith('/') || urlStr.startsWith('http://') || urlStr.startsWith('https://');
+  };
+
+  const validImages = Array.isArray(images) 
+    ? images.filter(img => isValidImageUrl(img)).map(img => String(img).trim())
+    : ['/assets/hero.jpg'];
+  
+  const safeImages = validImages.length > 0 ? validImages : ['/assets/hero.jpg'];
+  const safeInitialIndex = Math.min(initialIndex, safeImages.length - 1);
+  
+  const [currentIndex, setCurrentIndex] = useState(safeInitialIndex);
 
   // Keyboard navigation
   useEffect(() => {
@@ -27,9 +44,9 @@ export const ImageGalleryModal = ({
       if (e.key === 'Escape') {
         onClose();
       } else if (e.key === 'ArrowLeft') {
-        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+        setCurrentIndex((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1));
       } else if (e.key === 'ArrowRight') {
-        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        setCurrentIndex((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1));
       }
     };
 
@@ -41,14 +58,14 @@ export const ImageGalleryModal = ({
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [images.length, onClose]);
+  }, [safeImages.length, onClose]);
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1));
   };
 
   const goToImage = (index: number) => {
@@ -64,7 +81,7 @@ export const ImageGalleryModal = ({
             {title || 'Photo Gallery'}
           </h2>
           <span className="text-sm text-gray-300">
-            {currentIndex + 1} / {images.length}
+            {currentIndex + 1} / {safeImages.length}
           </span>
         </div>
         <button
@@ -79,7 +96,7 @@ export const ImageGalleryModal = ({
       {/* Main Image Container */}
       <div className="flex-1 relative flex items-center justify-center p-4 md:p-8">
         {/* Previous Button */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <button
             onClick={goToPrevious}
             className="absolute left-4 md:left-8 p-3 md:p-4 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full transition-all z-10 backdrop-blur-sm"
@@ -92,9 +109,10 @@ export const ImageGalleryModal = ({
         {/* Main Image */}
         <div className="relative w-full h-full max-w-7xl mx-auto">
           <Image
-            src={images[currentIndex]}
+            src={safeImages[currentIndex] || '/assets/hero.jpg'}
             alt={`${title || 'Gallery'} image ${currentIndex + 1}`}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw"
             style={{ objectFit: 'contain' }}
             className="transition-opacity duration-300"
             priority
@@ -103,7 +121,7 @@ export const ImageGalleryModal = ({
         </div>
 
         {/* Next Button */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <button
             onClick={goToNext}
             className="absolute right-4 md:right-8 p-3 md:p-4 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full transition-all z-10 backdrop-blur-sm"
@@ -115,11 +133,11 @@ export const ImageGalleryModal = ({
       </div>
 
       {/* Thumbnail Strip */}
-      {images.length > 1 && (
+      {safeImages.length > 1 && (
         <div className="border-t border-gray-700 bg-black bg-opacity-50 p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
             <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide pb-2">
-              {images.map((img, index) => (
+              {safeImages.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => goToImage(index)}

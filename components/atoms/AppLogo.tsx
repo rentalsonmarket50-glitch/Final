@@ -13,14 +13,9 @@ interface IAppLogoProps {
   isHomePage?: boolean;
 }
 
-const defaultProps: IAppLogoProps = {
-  className: 'text-black',
-  type: EAppLogo.TEXT,
-};
-
 const AppLogo: FC<IAppLogoProps> = ({ 
-  className, 
-  type, 
+  className = 'text-black', 
+  type = EAppLogo.TEXT, 
   isScrolled = false, 
   isActiveHeader = false, 
   isHomePage = false 
@@ -66,7 +61,5 @@ const AppLogo: FC<IAppLogoProps> = ({
       break;
   }
 };
-
-AppLogo.defaultProps = defaultProps;
 
 export default AppLogo;

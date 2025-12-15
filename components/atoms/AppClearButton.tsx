@@ -9,16 +9,11 @@ interface AppClearButtonProps {
   onClick: () => void;
 }
 
-const defaultProps = {
-  isFocus: true,
-  separator: false,
-};
-
 const AppClearButtonProps: FC<AppClearButtonProps> = ({
   onClick,
   active,
-  isFocus,
-  separator,
+  isFocus = true,
+  separator = false,
 }) => {
   return (
     <div className={`${separator && 'border-r border-gray-200'} flex items-center h-8`}>
@@ -35,7 +30,5 @@ const AppClearButtonProps: FC<AppClearButtonProps> = ({
     </div>
   );
 };
-
-AppClearButtonProps.defaultProps = defaultProps;
 
 export default AppClearButtonProps;
