@@ -137,7 +137,7 @@ export const ContactForm = ({
       } else {
         console.error('KV API submission failed:', result);
         toast.error('Failed to submit inquiry', {
-          description: result.error || 'Please try again later.',
+          description: 'Please try again later.',
         });
       }
     } catch (error) {
